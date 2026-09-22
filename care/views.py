@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import *
 from .forms import PetForm, SearchForm
+from .demo import DEMO_CITY
 from .services.stays import (
     eligibility,
     reserve,
@@ -68,6 +69,8 @@ def explore(request):
         {
             "form": form,
             "providers": results,
+            "demo_providers": Provider.objects.filter(jurisdiction__city=DEMO_CITY)
+                .select_related("jurisdiction") if getattr(request, "is_demo", False) and not request.GET else [],
             "excluded": excluded,
             "searched": form.is_bound and form.is_valid(),
             "nav": "Explore",

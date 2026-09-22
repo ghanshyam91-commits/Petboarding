@@ -1,0 +1,1 @@
+{% load demo_photos %}{% pet_photo pet as photo %}{% if photo %}<img class="pet-avatar" src="{{ photo }}" alt="{{ pet.name }} — sample {{ pet.get_species_display|lower }} photo" width="64" height="64" loading="lazy" referrerpolicy="no-referrer">{% else %}<span class="pet-avatar" aria-hidden="true">{{ pet.name|first }}</span>{% endif %}
