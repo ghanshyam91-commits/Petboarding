@@ -90,6 +90,9 @@ def quote(provider, pets, starts, ends):
 @transaction.atomic
 def reserve(owner, provider_id, pet_ids, starts, ends):
     provider = Provider.objects.select_for_update().get(pk=provider_id)
+    from care.demo import is_demo_user
+    if is_demo_user(owner) != is_demo_user(provider.owner):
+        raise PermissionDenied("Demo stays must remain separate from real bookings.")
     ids = set(pet_ids)
     pets = list(Pet.objects.select_for_update().filter(pk__in=ids, owner=owner))
     if not pets or len(pets) != len(ids):

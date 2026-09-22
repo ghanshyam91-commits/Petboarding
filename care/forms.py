@@ -45,6 +45,10 @@ class SearchForm(forms.Form):
     def __init__(self, *args, user, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["pets"].queryset = Pet.objects.filter(owner=user)
+        from .demo import is_demo_user, DEMO_CITY
+        if is_demo_user(user):
+            self.fields["city"].choices = [(DEMO_CITY, "Bengaluru · Demo")]
+            self.initial["city"] = DEMO_CITY
 
     def clean(self):
         data = super().clean()

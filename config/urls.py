@@ -3,8 +3,10 @@ from django.contrib.auth import views as auth
 from django.urls import path
 from care import views
 from config.health import health
+from care.demo import demo_login
 
 urlpatterns = [
+    path("demo/login/", demo_login, name="demo_login"),
     path("healthz/", health, name="health"),
     path("admin/", admin.site.urls),
     path(

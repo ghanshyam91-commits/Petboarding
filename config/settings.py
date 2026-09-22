@@ -115,3 +115,7 @@ if os.getenv("RAILWAY_ENVIRONMENT_ID"):
         CSRF_TRUSTED_ORIGINS.append(f"https://{railway_hostname}")
     ALLOWED_HOSTS.append("healthcheck.railway.app")
     SECURE_REDIRECT_EXEMPT = [r"^healthz/$"]
+
+ENABLE_DEMO_LOGIN = os.getenv("ENABLE_DEMO_LOGIN", "false").lower() == "true"
+MIDDLEWARE.insert(MIDDLEWARE.index("django.contrib.messages.middleware.MessageMiddleware") + 1, "care.demo.DemoReadOnly")
+TEMPLATES[0]["OPTIONS"]["context_processors"].append("care.demo.demo_context")
