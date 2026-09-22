@@ -23,6 +23,10 @@ class SignupForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         fields = ("first_name", "email", "username")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.pop("autofocus", None)
+
     def clean_email(self):
         value = self.cleaned_data["email"].strip().lower()
         if User.objects.filter(email__iexact=value).exists():
