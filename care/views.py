@@ -4,22 +4,29 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 from django.utils import timezone
 from .models import *
 from .forms import PetForm, SearchForm
 from .demo import DEMO_CITY
+from .context import workspace
+from .services.provider_flow import visible_bookings
+from .passport_flows import health_review_queue
 from .services.stays import (
     eligibility,
     reserve,
     complete_task,
     report_incident,
     can_view,
+    can_operate,
     cancel,
 )
 
 
 @login_required
 def home(request):
+    if workspace(request)["is_provider"]:
+        return redirect("operations")
     bookings = (
         Booking.objects.filter(owner=request.user)
         .select_related("provider")
@@ -81,10 +88,11 @@ def explore(request):
 @login_required
 @require_POST
 def book(request, pk):
+    get_object_or_404(Provider, pk=pk)
     form = SearchForm(request.POST, user=request.user)
     if not form.is_valid():
         messages.error(request, "Please select valid dates and pets.")
-        return redirect("explore")
+        return redirect(reverse("explore") + "?" + _search_query(request.POST))
     d = form.cleaned_data
     try:
         booking = reserve(
@@ -93,7 +101,7 @@ def book(request, pk):
         return redirect("stay", pk=booking.pk)
     except ValidationError as e:
         messages.error(request, " ".join(e.messages))
-        return redirect("explore")
+        return redirect(reverse("explore") + "?" + _search_query(request.POST))
 
 
 @login_required
@@ -106,6 +114,14 @@ def stay(request, pk):
         "care/stay.html",
         {
             "booking": booking,
+            "can_operate": can_operate(request.user, booking.provider),
+            "is_owner": request.user == booking.owner,
+            "handover": Handover.objects.filter(booking=booking).first(),
+            "checkout_record": booking.custody_events.filter(kind="checkout_provider_ack").first(),
+            "stay_review": Review.objects.filter(booking=booking).first(),
+            "checkin_available": booking.starts <= timezone.localdate() < booking.ends,
+            "review_categories": [(x, x.replace("_", " ").title()) for x in ["cleanliness", "communication", "care_quality", "update_reliability", "description_accuracy", "handling", "overall"]],
+            "care_pets": [{"pet": pet, "care": booking.care_snapshot.get(str(pet.pk), {}), "emergency": booking.emergency_consent.get(str(pet.pk), {})} for pet in booking.pets.all()],
             "events": booking.events.select_related("actor", "pet").order_by(
                 "-created_at"
             ),
@@ -116,16 +132,13 @@ def stay(request, pk):
 
 @login_required
 def bookings(request):
-    return render(
-        request,
-        "care/bookings.html",
-        {
-            "bookings": Booking.objects.filter(owner=request.user)
-            .select_related("provider")
-            .order_by("-created_at"),
-            "nav": "Bookings",
-        },
-    )
+    qs = visible_bookings(request.user).select_related("provider", "owner").order_by("-created_at")
+    status = request.GET.get("status", "")
+    if status in dict(Booking._meta.get_field("status").choices):
+        qs = qs.filter(status=status)
+    else:
+        status = ""
+    return render(request, "care/bookings.html", {"bookings": qs, "status": status, "nav": "Bookings"})
 
 
 @login_required
@@ -159,10 +172,10 @@ def operations(request):
     )
     if not providers.exists():
         raise PermissionDenied
-    stays = Booking.objects.filter(provider__in=providers, status="active")
+    stays = Booking.objects.filter(provider__in=providers, status="active").select_related("provider", "owner")
     tasks = (
-        CareTask.objects.filter(booking__in=stays)
-        .select_related("pet")
+        CareTask.objects.filter(booking__in=stays, due_at__date__lte=timezone.localdate())
+        .select_related("pet", "booking__provider")
         .order_by("completed_at", "due_at")
     )
     return render(
@@ -170,6 +183,10 @@ def operations(request):
         "care/operations.html",
         {
             "stays": stays,
+            "providers": providers.distinct(),
+            "upcoming": Booking.objects.filter(provider__in=providers, status__in=["reserved", "confirmed"]).select_related("provider", "owner").order_by("starts"),
+            "pending_count": tasks.filter(completed_at=None).count(),
+            "now": timezone.now(),
             "tasks": tasks,
             "overdue": tasks.filter(
                 completed_at=None, due_at__lt=timezone.now()
@@ -182,6 +199,7 @@ def operations(request):
 @login_required
 @require_POST
 def task_complete(request, pk):
+    get_object_or_404(CareTask, pk=pk)
     try:
         complete_task(request.user, pk)
         messages.success(request, "Care recorded in the stay timeline.")
@@ -193,6 +211,7 @@ def task_complete(request, pk):
 @login_required
 @require_POST
 def emergency(request, pk):
+    get_object_or_404(Booking, pk=pk)
     try:
         incident = report_incident(
             request.user, pk, "emergency", request.POST.get("description", "")[:4000]
@@ -209,6 +228,7 @@ def emergency(request, pk):
 @login_required
 @require_POST
 def cancellation(request, pk):
+    get_object_or_404(Booking, pk=pk)
     try:
         cancel(request.user, pk)
         messages.success(
@@ -228,11 +248,13 @@ def trust(request):
         request,
         "care/trust.html",
         {
+            "health_queue": health_review_queue(),
+            "disputes": Dispute.objects.filter(status="open").select_related("booking__provider"),
             "incidents": Incident.objects.filter(status="open").select_related(
                 "booking__provider"
             ),
             "overdue": CareTask.objects.filter(
-                critical=True, completed_at=None, due_at__lt=timezone.now()
+                booking__status="active", critical=True, completed_at=None, due_at__lt=timezone.now()
             ).count(),
             "providers": Provider.objects.all(),
             "active_count": Booking.objects.filter(status="active").count(),
@@ -249,7 +271,7 @@ def suspend(request, pk):
     from django.db import transaction
 
     with transaction.atomic():
-        p = Provider.objects.select_for_update().get(pk=pk)
+        p = get_object_or_404(Provider.objects.select_for_update(), pk=pk)
         p.suspended = True
         p.save()
         AuditEntry.objects.create(
@@ -264,7 +286,7 @@ def suspend(request, pk):
 
 @login_required
 def inbox(request):
-    qs = Booking.objects.filter(owner=request.user)
+    qs = visible_bookings(request.user).select_related("provider", "owner").prefetch_related("messages").order_by("-created_at")
     return render(request, "care/inbox.html", {"bookings": qs, "nav": "Messages"})
 
 
@@ -277,6 +299,9 @@ def send_message(request, pk):
     text = request.POST.get("text", "").strip()
     if text and len(text) <= 2000:
         Message.objects.create(booking=b, sender=request.user, text=text)
+        messages.success(request, "Message sent.")
+    else:
+        messages.error(request, "Enter a message of 1–2,000 characters.")
     return redirect("stay", pk=pk)
 
 
@@ -362,6 +387,8 @@ def dispute(request, pk):
                 object_id=case.pk,
             )
         messages.success(request, f"Dispute #{case.pk} opened with evidence hold.")
+    else:
+        messages.error(request, "Describe the issue before opening a case.")
     return redirect("stay", pk=pk)
 
 
@@ -378,3 +405,11 @@ def privacy_request(request):
             "Privacy request recorded for review. Evidence retention obligations will be assessed before deletion.",
         )
     return redirect("profile")
+
+
+def _search_query(data):
+    from django.http import QueryDict
+    query = QueryDict(mutable=True)
+    for key in ("city", "starts", "ends", "pets"):
+        query.setlist(key, data.getlist(key))
+    return query.urlencode()

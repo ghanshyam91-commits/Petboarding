@@ -12,7 +12,7 @@ class LoginThrottle:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.method == "POST" and request.path in ["/login/", "/admin/login/"]:
+        if request.method == "POST" and request.path in ["/login/", "/admin/login/", "/signup/"]:
             window = int(time.time()) // 900
             identities = [
                 ("ip", request.META.get("REMOTE_ADDR", "unknown"), 50),

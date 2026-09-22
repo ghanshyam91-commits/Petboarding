@@ -90,6 +90,8 @@ def quote(provider, pets, starts, ends):
 @transaction.atomic
 def reserve(owner, provider_id, pet_ids, starts, ends):
     provider = Provider.objects.select_for_update().get(pk=provider_id)
+    if owner == provider.owner:
+        raise ValidationError("A provider cannot book their own facility. Handover requires two separate parties.")
     from care.demo import is_demo_user
     if is_demo_user(owner) != is_demo_user(provider.owner):
         raise PermissionDenied("Demo stays must remain separate from real bookings.")
@@ -155,6 +157,8 @@ def complete_task(user, task_id):
         raise ValidationError("Care can only be recorded for an active stay.")
     if task.completed_at:
         return task
+    if task.due_at > timezone.now():
+        raise ValidationError("This task is not due yet. Record care when it is due.")
     task.completed_at = timezone.now()
     task.completed_by = user
     task.save()
@@ -321,6 +325,7 @@ def escalate_overdue():
     for task in (
         CareTask.objects.select_for_update()
         .filter(
+            booking__status="active",
             critical=True,
             completed_at=None,
             escalated_at=None,

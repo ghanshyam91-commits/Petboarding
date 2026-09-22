@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth
 from django.urls import path
-from care import views
+from care import views, account_flows, passport_flows, provider_flows, preview_flows
 from config.health import health
 from care.demo import demo_login
 
@@ -29,8 +29,22 @@ urlpatterns = [
     path("trust/providers/<int:pk>/suspend/", views.suspend, name="suspend"),
 ]
 urlpatterns += [
-    path("stays/<int:pk>/handover/", views.handover, name="handover"),
+    path("stays/<int:pk>/handover/", provider_flows.checkin, name="handover"),
     path("stays/<int:pk>/review/", views.review, name="review"),
     path("stays/<int:pk>/dispute/", views.dispute, name="dispute"),
     path("privacy/request/", views.privacy_request, name="privacy_request"),
+]
+
+urlpatterns += [
+    path("signup/", account_flows.signup, name="signup"),
+    path("account/", account_flows.account, name="account"),
+    path("pets/<int:pk>/edit/", passport_flows.pet_edit, name="pet_edit"),
+    path("pets/<int:pk>/health/add/", passport_flows.health_submit, name="health_submit"),
+    path("health/<int:pk>/document/", passport_flows.health_document, name="health_document"),
+    path("trust/health/<int:pk>/", passport_flows.health_review, name="health_review"),
+    path("stays/<int:pk>/confirm/", provider_flows.confirm_stay, name="confirm_stay"),
+    path("stays/<int:pk>/checkout/", provider_flows.checkout, name="checkout"),
+    path("stays/<int:pk>/care/", provider_flows.record_care, name="record_care"),
+    path("stays/<int:pk>/tasks/", provider_flows.add_task, name="add_task"),
+    path("providers/<int:pk>/preview/", preview_flows.provider_preview, name="provider_preview"),
 ]

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Pet
+from django.utils import timezone
 
 
 class PetForm(forms.ModelForm):
@@ -19,6 +20,19 @@ class PetForm(forms.ModelForm):
             "medication_required",
         ]
         widgets = {"birth_date": forms.DateInput(attrs={"type": "date"})}
+
+
+    def clean_weight(self):
+        weight = self.cleaned_data.get("weight")
+        if weight is not None and weight <= 0:
+            raise forms.ValidationError("Enter a weight greater than zero.")
+        return weight
+
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get("birth_date")
+        if birth_date and birth_date > timezone.localdate():
+            raise forms.ValidationError("Birth date cannot be in the future.")
+        return birth_date
 
 
 class SearchForm(forms.Form):
@@ -52,6 +66,8 @@ class SearchForm(forms.Form):
 
     def clean(self):
         data = super().clean()
+        if data.get("starts") and data["starts"] < timezone.localdate():
+            self.add_error("starts", "Choose today or a future date.")
         if (
             data.get("starts")
             and data.get("ends")

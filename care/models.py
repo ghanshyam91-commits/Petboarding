@@ -377,3 +377,5 @@ class RateBucket(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["key", "window"], name="unique_rate_bucket")
         ]
+
+from .evidence_models import HealthEvidence

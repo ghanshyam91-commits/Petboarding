@@ -119,3 +119,4 @@ if os.getenv("RAILWAY_ENVIRONMENT_ID"):
 ENABLE_DEMO_LOGIN = os.getenv("ENABLE_DEMO_LOGIN", "false").lower() == "true"
 MIDDLEWARE.insert(MIDDLEWARE.index("django.contrib.messages.middleware.MessageMiddleware") + 1, "care.demo.DemoReadOnly")
 TEMPLATES[0]["OPTIONS"]["context_processors"].append("care.demo.demo_context")
+TEMPLATES[0]["OPTIONS"]["context_processors"].append("care.context.workspace")
