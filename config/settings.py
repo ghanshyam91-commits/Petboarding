@@ -105,3 +105,13 @@ MIDDLEWARE.insert(
     "care.middleware.LoginThrottle",
 )
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+
+# Railway terminates TLS at its managed proxy, as Render does above.
+if os.getenv("RAILWAY_ENVIRONMENT_ID"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    railway_hostname = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+    if railway_hostname:
+        ALLOWED_HOSTS.append(railway_hostname)
+        CSRF_TRUSTED_ORIGINS.append(f"https://{railway_hostname}")
+    ALLOWED_HOSTS.append("healthcheck.railway.app")
+    SECURE_REDIRECT_EXEMPT = [r"^healthz/$"]
