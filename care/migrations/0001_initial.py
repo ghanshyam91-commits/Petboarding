@@ -17,355 +17,895 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Jurisdiction',
+            name="Jurisdiction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('city', models.CharField(max_length=100, unique=True)),
-                ('state', models.CharField(max_length=100)),
-                ('country', models.CharField(default='IN', max_length=2)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("city", models.CharField(max_length=100, unique=True)),
+                ("state", models.CharField(max_length=100)),
+                ("country", models.CharField(default="IN", max_length=2)),
             ],
         ),
         migrations.CreateModel(
-            name='AuditEntry',
+            name="AuditEntry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('action', models.CharField(max_length=100)),
-                ('object_type', models.CharField(max_length=80)),
-                ('object_id', models.PositiveBigIntegerField()),
-                ('detail', models.JSONField(default=dict)),
-                ('actor', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("action", models.CharField(max_length=100)),
+                ("object_type", models.CharField(max_length=80)),
+                ("object_id", models.PositiveBigIntegerField()),
+                ("detail", models.JSONField(default=dict)),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Booking',
+            name="Booking",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('starts', models.DateField()),
-                ('ends', models.DateField()),
-                ('status', models.CharField(choices=[('reserved', 'Reserved'), ('confirmed', 'Confirmed'), ('active', 'Active'), ('completed', 'Completed'), ('cancelled', 'Cancelled')], default='reserved', max_length=25)),
-                ('quote', models.JSONField(default=dict)),
-                ('care_snapshot', models.JSONField(default=dict)),
-                ('emergency_consent', models.JSONField(default=dict)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("starts", models.DateField()),
+                ("ends", models.DateField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("reserved", "Reserved"),
+                            ("confirmed", "Confirmed"),
+                            ("active", "Active"),
+                            ("completed", "Completed"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="reserved",
+                        max_length=25,
+                    ),
+                ),
+                ("quote", models.JSONField(default=dict)),
+                ("care_snapshot", models.JSONField(default=dict)),
+                ("emergency_consent", models.JSONField(default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Consent',
+            name="Consent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('purpose', models.CharField(max_length=100)),
-                ('version', models.CharField(max_length=40)),
-                ('granted', models.BooleanField()),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("purpose", models.CharField(max_length=100)),
+                ("version", models.CharField(max_length=40)),
+                ("granted", models.BooleanField()),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='CustodyEvent',
+            name="CustodyEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('kind', models.CharField(max_length=30)),
-                ('details', models.JSONField(default=dict)),
-                ('actor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='custody_events', to='care.booking')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("kind", models.CharField(max_length=30)),
+                ("details", models.JSONField(default=dict)),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="custody_events",
+                        to="care.booking",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Dispute',
+            name="Dispute",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reason', models.TextField()),
-                ('status', models.CharField(default='open', max_length=20)),
-                ('evidence_hold', models.BooleanField(default=True)),
-                ('decision', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='disputes', to='care.booking')),
-                ('opened_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("reason", models.TextField()),
+                ("status", models.CharField(default="open", max_length=20)),
+                ("evidence_hold", models.BooleanField(default=True)),
+                ("decision", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="disputes",
+                        to="care.booking",
+                    ),
+                ),
+                (
+                    "opened_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Handover',
+            name="Handover",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('condition', models.TextField()),
-                ('belongings', models.TextField()),
-                ('food_and_medicines', models.TextField()),
-                ('emergency_verified', models.BooleanField(default=False)),
-                ('owner_ack_at', models.DateTimeField(null=True)),
-                ('provider_ack_at', models.DateTimeField(null=True)),
-                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='handover', to='care.booking')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("condition", models.TextField()),
+                ("belongings", models.TextField()),
+                ("food_and_medicines", models.TextField()),
+                ("emergency_verified", models.BooleanField(default=False)),
+                ("owner_ack_at", models.DateTimeField(null=True)),
+                ("provider_ack_at", models.DateTimeField(null=True)),
+                (
+                    "booking",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="handover",
+                        to="care.booking",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Incident',
+            name="Incident",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('category', models.CharField(max_length=80)),
-                ('description', models.TextField()),
-                ('status', models.CharField(default='open', max_length=20)),
-                ('evidence_hold', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='incidents', to='care.booking')),
-                ('reporter', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("category", models.CharField(max_length=80)),
+                ("description", models.TextField()),
+                ("status", models.CharField(default="open", max_length=20)),
+                ("evidence_hold", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="incidents",
+                        to="care.booking",
+                    ),
+                ),
+                (
+                    "reporter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='InsurancePolicy',
+            name="InsurancePolicy",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('insurer', models.CharField(max_length=200)),
-                ('coverage', models.JSONField()),
-                ('exclusions', models.TextField()),
-                ('deductible_paise', models.PositiveIntegerField()),
-                ('maximum_paise', models.PositiveIntegerField()),
-                ('claim_procedure', models.TextField()),
-                ('terms_version', models.CharField(max_length=100)),
-                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, to='care.booking')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("insurer", models.CharField(max_length=200)),
+                ("coverage", models.JSONField()),
+                ("exclusions", models.TextField()),
+                ("deductible_paise", models.PositiveIntegerField()),
+                ("maximum_paise", models.PositiveIntegerField()),
+                ("claim_procedure", models.TextField()),
+                ("terms_version", models.CharField(max_length=100)),
+                (
+                    "booking",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.booking"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='LedgerEntry',
+            name="LedgerEntry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('kind', models.CharField(max_length=30)),
-                ('amount_paise', models.PositiveIntegerField()),
-                ('currency', models.CharField(default='INR', max_length=3)),
-                ('external_id', models.CharField(max_length=200, unique=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.booking')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("kind", models.CharField(max_length=30)),
+                ("amount_paise", models.PositiveIntegerField()),
+                ("currency", models.CharField(default="INR", max_length=3)),
+                ("external_id", models.CharField(max_length=200, unique=True)),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.booking"
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Message',
+            name="Message",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.TextField(max_length=2000)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='messages', to='care.booking')),
-                ('sender', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.TextField(max_length=2000)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="messages",
+                        to="care.booking",
+                    ),
+                ),
+                (
+                    "sender",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Notification',
+            name="Notification",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('message', models.TextField()),
-                ('critical', models.BooleanField(default=False)),
-                ('status', models.CharField(default='queued', max_length=20)),
-                ('attempts', models.PositiveIntegerField(default=0)),
-                ('acknowledged_at', models.DateTimeField(blank=True, null=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.booking')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("message", models.TextField()),
+                ("critical", models.BooleanField(default=False)),
+                ("status", models.CharField(default="queued", max_length=20)),
+                ("attempts", models.PositiveIntegerField(default=0)),
+                ("acknowledged_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.booking"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Pet',
+            name="Pet",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=80)),
-                ('species', models.CharField(choices=[('dog', 'Dog'), ('cat', 'Cat')], max_length=12)),
-                ('breed', models.CharField(blank=True, max_length=100)),
-                ('birth_date', models.DateField(blank=True, null=True)),
-                ('weight', models.DecimalField(blank=True, decimal_places=2, max_digits=5, null=True)),
-                ('sex', models.CharField(blank=True, max_length=20)),
-                ('neutered', models.BooleanField(default=False)),
-                ('microchip', models.CharField(blank=True, max_length=80)),
-                ('compatible_cats', models.BooleanField(default=False)),
-                ('compatible_dogs', models.BooleanField(default=False)),
-                ('aggression_history', models.BooleanField(default=False)),
-                ('medication_required', models.BooleanField(default=False)),
-                ('health', models.JSONField(blank=True, default=dict)),
-                ('behaviour', models.JSONField(blank=True, default=dict)),
-                ('routine', models.JSONField(blank=True, default=list)),
-                ('emergency', models.JSONField(blank=True, default=dict)),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=80)),
+                (
+                    "species",
+                    models.CharField(
+                        choices=[("dog", "Dog"), ("cat", "Cat")], max_length=12
+                    ),
+                ),
+                ("breed", models.CharField(blank=True, max_length=100)),
+                ("birth_date", models.DateField(blank=True, null=True)),
+                (
+                    "weight",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=5, null=True
+                    ),
+                ),
+                ("sex", models.CharField(blank=True, max_length=20)),
+                ("neutered", models.BooleanField(default=False)),
+                ("microchip", models.CharField(blank=True, max_length=80)),
+                ("compatible_cats", models.BooleanField(default=False)),
+                ("compatible_dogs", models.BooleanField(default=False)),
+                ("aggression_history", models.BooleanField(default=False)),
+                ("medication_required", models.BooleanField(default=False)),
+                ("health", models.JSONField(blank=True, default=dict)),
+                ("behaviour", models.JSONField(blank=True, default=dict)),
+                ("routine", models.JSONField(blank=True, default=list)),
+                ("emergency", models.JSONField(blank=True, default=dict)),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='HealthRecord',
+            name="HealthRecord",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('kind', models.CharField(max_length=80)),
-                ('status', models.CharField(choices=[('unverified', 'Unverified'), ('pending', 'Pending'), ('verified', 'Verified'), ('expired', 'Expired'), ('rejected', 'Rejected')], default='pending', max_length=16)),
-                ('expires', models.DateField(blank=True, null=True)),
-                ('verified_at', models.DateTimeField(blank=True, null=True)),
-                ('private_document_key', models.CharField(blank=True, max_length=300)),
-                ('verified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('pet', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='records', to='care.pet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("kind", models.CharField(max_length=80)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("unverified", "Unverified"),
+                            ("pending", "Pending"),
+                            ("verified", "Verified"),
+                            ("expired", "Expired"),
+                            ("rejected", "Rejected"),
+                        ],
+                        default="pending",
+                        max_length=16,
+                    ),
+                ),
+                ("expires", models.DateField(blank=True, null=True)),
+                ("verified_at", models.DateTimeField(blank=True, null=True)),
+                ("private_document_key", models.CharField(blank=True, max_length=300)),
+                (
+                    "verified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "pet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="records",
+                        to="care.pet",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CareTask',
+            name="CareTask",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('kind', models.CharField(max_length=50)),
-                ('due_at', models.DateTimeField()),
-                ('critical', models.BooleanField(default=False)),
-                ('completed_at', models.DateTimeField(blank=True, null=True)),
-                ('escalated_at', models.DateTimeField(blank=True, null=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tasks', to='care.booking')),
-                ('completed_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('pet', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.pet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("kind", models.CharField(max_length=50)),
+                ("due_at", models.DateTimeField()),
+                ("critical", models.BooleanField(default=False)),
+                ("completed_at", models.DateTimeField(blank=True, null=True)),
+                ("escalated_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="tasks",
+                        to="care.booking",
+                    ),
+                ),
+                (
+                    "completed_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "pet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.pet"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CareEvent',
+            name="CareEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('kind', models.CharField(max_length=80)),
-                ('notes', models.TextField(blank=True)),
-                ('actor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='events', to='care.booking')),
-                ('pet', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='care.pet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("kind", models.CharField(max_length=80)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "booking",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="events",
+                        to="care.booking",
+                    ),
+                ),
+                (
+                    "pet",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="care.pet",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='booking',
-            name='pets',
-            field=models.ManyToManyField(to='care.pet'),
+            model_name="booking",
+            name="pets",
+            field=models.ManyToManyField(to="care.pet"),
         ),
         migrations.CreateModel(
-            name='PrivacyRequest',
+            name="PrivacyRequest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('kind', models.CharField(choices=[('export', 'Export'), ('delete', 'Delete')], max_length=20)),
-                ('status', models.CharField(default='pending', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "kind",
+                    models.CharField(
+                        choices=[("export", "Export"), ("delete", "Delete")],
+                        max_length=20,
+                    ),
+                ),
+                ("status", models.CharField(default="pending", max_length=20)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Provider',
+            name="Provider",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=120)),
-                ('kind', models.CharField(choices=[('facility', 'Facility'), ('home', 'Home boarding'), ('daycare', 'Daycare'), ('sitter', 'Pet sitter')], max_length=20)),
-                ('locality', models.CharField(max_length=100)),
-                ('private_address', models.TextField(blank=True)),
-                ('species', models.JSONField(default=list)),
-                ('resident_species', models.JSONField(default=list)),
-                ('capacity', models.PositiveIntegerField(default=1, validators=[django.core.validators.MinValueValidator(1)])),
-                ('medication_competent', models.BooleanField(default=False)),
-                ('accepts_aggression', models.BooleanField(default=False)),
-                ('overnight_supervision', models.BooleanField(default=False)),
-                ('ac', models.BooleanField(default=False)),
-                ('suspended', models.BooleanField(default=False)),
-                ('nightly_paise', models.PositiveIntegerField(default=120000)),
-                ('care_description', models.TextField(blank=True)),
-                ('audit', models.JSONField(blank=True, default=dict)),
-                ('jurisdiction', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.jurisdiction')),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=120)),
+                (
+                    "kind",
+                    models.CharField(
+                        choices=[
+                            ("facility", "Facility"),
+                            ("home", "Home boarding"),
+                            ("daycare", "Daycare"),
+                            ("sitter", "Pet sitter"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("locality", models.CharField(max_length=100)),
+                ("private_address", models.TextField(blank=True)),
+                ("species", models.JSONField(default=list)),
+                ("resident_species", models.JSONField(default=list)),
+                (
+                    "capacity",
+                    models.PositiveIntegerField(
+                        default=1,
+                        validators=[django.core.validators.MinValueValidator(1)],
+                    ),
+                ),
+                ("medication_competent", models.BooleanField(default=False)),
+                ("accepts_aggression", models.BooleanField(default=False)),
+                ("overnight_supervision", models.BooleanField(default=False)),
+                ("ac", models.BooleanField(default=False)),
+                ("suspended", models.BooleanField(default=False)),
+                ("nightly_paise", models.PositiveIntegerField(default=120000)),
+                ("care_description", models.TextField(blank=True)),
+                ("audit", models.JSONField(blank=True, default=dict)),
+                (
+                    "jurisdiction",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="care.jurisdiction",
+                    ),
+                ),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Credential',
+            name="Credential",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('category', models.CharField(max_length=80)),
-                ('status', models.CharField(default='pending', max_length=20)),
-                ('issued', models.DateField(blank=True, null=True)),
-                ('expires', models.DateField()),
-                ('verified_at', models.DateTimeField(blank=True, null=True)),
-                ('issuing_authority', models.CharField(blank=True, max_length=200)),
-                ('private_document_key', models.CharField(blank=True, max_length=300)),
-                ('verified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('provider', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='credentials', to='care.provider')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("category", models.CharField(max_length=80)),
+                ("status", models.CharField(default="pending", max_length=20)),
+                ("issued", models.DateField(blank=True, null=True)),
+                ("expires", models.DateField()),
+                ("verified_at", models.DateTimeField(blank=True, null=True)),
+                ("issuing_authority", models.CharField(blank=True, max_length=200)),
+                ("private_document_key", models.CharField(blank=True, max_length=300)),
+                (
+                    "verified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "provider",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="credentials",
+                        to="care.provider",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='booking',
-            name='provider',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.provider'),
+            model_name="booking",
+            name="provider",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="care.provider"
+            ),
         ),
         migrations.CreateModel(
-            name='Review',
+            name="Review",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ratings', models.JSONField(default=dict)),
-                ('text', models.TextField()),
-                ('matched_listing', models.BooleanField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, to='care.booking')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("ratings", models.JSONField(default=dict)),
+                ("text", models.TextField()),
+                ("matched_listing", models.BooleanField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "booking",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.booking"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='StaffMembership',
+            name="StaffMembership",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('role', models.CharField(choices=[('manager', 'Manager'), ('caregiver', 'Caregiver'), ('transport', 'Transport'), ('frontdesk', 'Frontdesk')], max_length=20)),
-                ('training', models.JSONField(default=list)),
-                ('provider', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.provider')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "role",
+                    models.CharField(
+                        choices=[
+                            ("manager", "Manager"),
+                            ("caregiver", "Caregiver"),
+                            ("transport", "Transport"),
+                            ("frontdesk", "Frontdesk"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("training", models.JSONField(default=list)),
+                (
+                    "provider",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.provider"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Trial',
+            name="Trial",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('kind', models.CharField(choices=[('video', 'Video call'), ('meet', 'Meet and greet'), ('daycare', 'Daycare trial'), ('short_stay', 'Short stay')], max_length=20)),
-                ('scheduled_at', models.DateTimeField()),
-                ('outcome', models.CharField(choices=[('pending', 'Pending'), ('suitable', 'Suitable'), ('with_conditions', 'With Conditions'), ('unsuitable', 'Unsuitable')], default='pending', max_length=30)),
-                ('owner_notes', models.TextField(blank=True)),
-                ('provider_notes', models.TextField(blank=True)),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('pet', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.pet')),
-                ('provider', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.provider')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "kind",
+                    models.CharField(
+                        choices=[
+                            ("video", "Video call"),
+                            ("meet", "Meet and greet"),
+                            ("daycare", "Daycare trial"),
+                            ("short_stay", "Short stay"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("scheduled_at", models.DateTimeField()),
+                (
+                    "outcome",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("suitable", "Suitable"),
+                            ("with_conditions", "With Conditions"),
+                            ("unsuitable", "Unsuitable"),
+                        ],
+                        default="pending",
+                        max_length=30,
+                    ),
+                ),
+                ("owner_notes", models.TextField(blank=True)),
+                ("provider_notes", models.TextField(blank=True)),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "pet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.pet"
+                    ),
+                ),
+                (
+                    "provider",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.provider"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ComplianceRule',
+            name="ComplianceRule",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('version', models.PositiveIntegerField()),
-                ('effective_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('home_boarding_allowed', models.BooleanField(default=False)),
-                ('required_credentials', models.JSONField(default=list)),
-                ('required_vaccines', models.JSONField(default=list)),
-                ('reviewed', models.BooleanField(default=False)),
-                ('jurisdiction', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.jurisdiction')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("version", models.PositiveIntegerField()),
+                (
+                    "effective_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("home_boarding_allowed", models.BooleanField(default=False)),
+                ("required_credentials", models.JSONField(default=list)),
+                ("required_vaccines", models.JSONField(default=list)),
+                ("reviewed", models.BooleanField(default=False)),
+                (
+                    "jurisdiction",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="care.jurisdiction",
+                    ),
+                ),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('jurisdiction', 'version'), name='unique_rule_version')],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("jurisdiction", "version"), name="unique_rule_version"
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='CapacityDay',
+            name="CapacityDay",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('day', models.DateField()),
-                ('reserved', models.PositiveIntegerField(default=0)),
-                ('blocked', models.BooleanField(default=False)),
-                ('provider', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='care.provider')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("day", models.DateField()),
+                ("reserved", models.PositiveIntegerField(default=0)),
+                ("blocked", models.BooleanField(default=False)),
+                (
+                    "provider",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="care.provider"
+                    ),
+                ),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('provider', 'day'), name='unique_capacity_day')],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("provider", "day"), name="unique_capacity_day"
+                    )
+                ],
             },
         ),
         migrations.AddConstraint(
-            model_name='booking',
-            constraint=models.CheckConstraint(condition=models.Q(('ends__gt', models.F('starts'))), name='valid_stay_dates'),
+            model_name="booking",
+            constraint=models.CheckConstraint(
+                condition=models.Q(("ends__gt", models.F("starts"))),
+                name="valid_stay_dates",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='staffmembership',
-            constraint=models.UniqueConstraint(fields=('provider', 'user'), name='unique_staff'),
+            model_name="staffmembership",
+            constraint=models.UniqueConstraint(
+                fields=("provider", "user"), name="unique_staff"
+            ),
         ),
     ]

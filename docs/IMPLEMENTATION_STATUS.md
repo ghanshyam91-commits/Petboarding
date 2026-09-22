@@ -45,8 +45,8 @@ The original brief describes a large safety-critical marketplace. This file dist
 
 ## Verification at initial delivery
 
-- 21 local Django tests passed before final additions; run the repository test suite for the current result.
-- PostgreSQL-only concurrency and append-only trigger tests are included in CI; skipped locally without PostgreSQL.
+- Local test suite: 21 passed and 2 PostgreSQL-only tests skipped.
+- GitHub Actions passed the full suite against PostgreSQL 16, including concurrent capacity reservations and append-only database triggers: https://github.com/ghanshyam91-commits/Petboarding/actions/runs/35683967685
 - Browser smoke script was attempted, but the required Chromium download was unavailable in the execution environment. Layout screenshots and cross-browser verification have not been completed.
 - No external payment, messaging, CCTV, map, insurance or veterinary integration has been tested.
 - No public deployment, real provider verification, legal validation or production-readiness certification has been performed.

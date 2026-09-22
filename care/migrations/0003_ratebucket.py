@@ -6,20 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('care', '0002_append_only'),
+        ("care", "0002_append_only"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RateBucket',
+            name="RateBucket",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.CharField(max_length=64)),
-                ('window', models.PositiveBigIntegerField()),
-                ('count', models.PositiveIntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("key", models.CharField(max_length=64)),
+                ("window", models.PositiveBigIntegerField()),
+                ("count", models.PositiveIntegerField(default=0)),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('key', 'window'), name='unique_rate_bucket')],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("key", "window"), name="unique_rate_bucket"
+                    )
+                ],
             },
         ),
     ]
