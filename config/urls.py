@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.contrib.auth import views as auth
 from django.urls import path
 from care import views
+from config.health import health
 
 urlpatterns = [
+    path("healthz/", health, name="health"),
     path("admin/", admin.site.urls),
     path(
         "login/", auth.LoginView.as_view(template_name="care/login.html"), name="login"

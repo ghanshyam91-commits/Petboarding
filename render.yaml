@@ -1,0 +1,32 @@
+# Testing deployment: free PostgreSQL expires after 30 days.
+services:
+  - type: web
+    name: safestay-petboarding
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: bash scripts/render-start.sh
+    healthCheckPath: /healthz/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.13"
+      - key: DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: safestay-db
+          property: connectionString
+      - key: WEB_CONCURRENCY
+        value: "1"
+
+databases:
+  - name: safestay-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: "16"
+    databaseName: safestay
+    user: safestay
+    ipAllowList: []

@@ -13,6 +13,15 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").spl
 CSRF_TRUSTED_ORIGINS = [
     x for x in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if x
 ]
+# Render terminates TLS at its managed reverse proxy.
+if os.getenv("RENDER") == "true":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
+    if render_hostname:
+        ALLOWED_HOSTS.append(render_hostname)
+        CSRF_TRUSTED_ORIGINS.append(f"https://{render_hostname}")
+    # This endpoint returns only readiness, including a database check.
+    SECURE_REDIRECT_EXEMPT = [r"^healthz/$"]
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -74,6 +83,12 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
