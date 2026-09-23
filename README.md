@@ -1,18 +1,31 @@
-# SafeStay — India-first pet boarding
+# SafeStay
 
-**Verified boarding with evidence of care.** Python / Django application in the Petboarding repository.
+**Verified boarding with evidence of care** is the idea behind SafeStay, an India-first pet boarding prototype built with Django.
 
-## Current delivery
+The problem felt concrete to me as a pet owner: finding a facility is only the first step. I also want to know whether it can actually take my dog, what happens at handover, who did the care tasks, and what the platform can show if something goes wrong. The demo pet, Uno, and the Bengaluru facilities in this repository are **fictional test data**.
 
-This is a working, server-rendered **initial implementation**, not a completed production marketplace. It includes real database-backed parent, provider and trust workflows. It does not charge money, deliver emergency alerts, supply real verified providers, or provide a booking-protection guarantee. Read [implementation status](docs/IMPLEMENTATION_STATUS.md) before deploying.
+This is an initial implementation, not a live booking marketplace. It has database-backed parent, provider and trust workflows. It does not take payments, verify real facilities, deliver emergency alerts or promise replacement boarding. [Implementation status](docs/IMPLEMENTATION_STATUS.md) tracks the gaps in detail.
 
-### Run locally
+## Follow a stay
 
-Python 3.12 recommended.
+1. A parent maintains a pet profile and health record, then searches by city, dates and pets. Eligibility checks exclude incompatible providers before a reservation can be made.
+2. A reservation takes nightly capacity for **each** pet. The service checks eligibility again inside the transaction; PostgreSQL row locks protect concurrent reservations.
+3. Handover records belongings, food, condition and both parties' acknowledgement. During an active stay, attributed care events and per-pet tasks appear in the timeline.
+4. Overdue critical tasks can be escalated into incidents and queued notification records. Those records currently have **no external delivery**.
+
+There are separate parent, provider and trust workspaces. The trust view can see incidents and suspend a provider from new reservations. Prices are represented in integer paise, but the quote is an estimate and no money changes hands.
+
+The point of the data model is that a stay leaves a useful trail: care events, custody changes, consent, ledger and audit entries are append-only. PostgreSQL triggers reject updates and deletes to these records. This protects against ordinary application writes; a database administrator can still change schema or data, so stronger evidence retention needs infrastructure beyond this repo.
+
+## Run locally
+
+Python 3.12 is recommended.
 
 ```bash
+git clone https://github.com/ghanshyam91-commits/Petboarding.git
+cd Petboarding
 python -m venv .venv
-. .venv/bin/activate
+source .venv/bin/activate
 pip install -r requirements.txt
 export DEBUG=true
 export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
@@ -21,61 +34,36 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000. Accounts are currently invitation-based username/password accounts. Django administration lives at `/admin/`.
-
-### Optional fictional demo
-
-Run only on a local development database. Choose your own password; none is committed.
+Open http://127.0.0.1:8000/. To explore the three workspaces with local fictional data:
 
 ```bash
 export DEMO_PASSWORD='choose-a-unique-password-of-at-least-12-characters'
 python manage.py seed_demo
 ```
 
-Sign in as `parent_demo`, `provider_demo`, or `trust_demo` using that password. The demo has Uno, three **fictional** Bengaluru facilities, a live stay and sample care events. Its verification records and jurisdiction policy are fixtures, **not legal or veterinary facts**. Demo seeding refuses to run with `DEBUG=false`. Use a separate database for real records.
+Sign in as `parent_demo`, `provider_demo` or `trust_demo` with that password. The seeder requires `DEBUG=true` and a fresh development database. Its facility credentials and city rule are examples, not real verification.
 
-### Workspaces
+| Area | URL | What you can inspect |
+| --- | --- | --- |
+| Parent | `/`, `/explore/`, `/profile/`, `/bookings/` | Pet profile, eligibility, search and stays |
+| Stay | `/stays/<id>/` | Quote, handover, care timeline, messages and incident flow |
+| Provider | `/operations/` | Active pets and care tasks |
+| Trust | `/trust/` | Incident triage and provider suspension |
+| Admin | `/admin/` | Restricted Django administration |
 
-| Path | Purpose |
-|---|---|
-| `/` | Parent home transforms into the active-stay timeline |
-| `/explore/` | City/date/multi-pet search with server-side hard eligibility |
-| `/profile/` | Pet passports, health status and privacy requests |
-| `/bookings/` | Household stays |
-| `/stays/<id>/` | Care timeline, quote, handover, messages, emergency and disputes |
-| `/operations/` | Provider/caregiver care board and active pets |
-| `/trust/` | Staff-only incident triage, critical tasks and suspension |
-| `/admin/` | Restricted Django administration and verification records |
+## Engineering notes
 
-### Tests
+The user interface uses Django templates and session/CSRF protection. The stay service in `care/services/stays.py` owns reservations, cancellation, handover, task completion and escalation; those state changes are deliberately kept out of generic model edits. Credentials expose their category, reviewer and expiry. Unreviewed city rules fail closed. Private addresses and document keys are not displayed in public listings.
+
+Run the suite and migration check with:
 
 ```bash
 DEBUG=true python manage.py test
 DEBUG=true python manage.py makemigrations --check --dry-run
 ```
 
-The PostgreSQL tests exercise simultaneous capacity reservations and database-level evidence immutability. SQLite skips those tests and is suitable only for local exploration. CI uses PostgreSQL 16. `select_for_update` does not provide row locking on SQLite; see [Django QuerySet documentation](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update).
+SQLite is convenient for a first look, but it does not enforce the same row-locking behavior as PostgreSQL. CI runs PostgreSQL 16 tests for concurrent reservations and append-only triggers. The command `python manage.py escalate_care` is intended to run every minute under a scheduler; it only creates incident and notification records.
 
-### Architecture
+## Before a real pilot
 
-Django templates keep frontend rendering, localization and session/CSRF controls straightforward. The warm cream/forest visual system is responsive and includes labelled forms, keyboard focus, reduced-motion support and textual safety states. Accessibility certification and browser/device verification are not claimed.
-
-`care/services/stays.py` owns transactional reservations, cancellation, handover, task completion and incident escalation. Domain state changes do not belong in generic CRUD endpoints. PostgreSQL provider-row locks serialize capacity writers; health and compatibility checks run again inside the reservation transaction. Every pet is checked individually. Financial amounts are integer paise.
-
-Care events, custody, audit, consent and ledger entries are append-only. PostgreSQL triggers reject UPDATE and DELETE, including bulk ORM operations. Database owners can still alter schema: production requires least-privilege roles, backup controls and independent retention infrastructure. No immutable object-store evidence retention is claimed.
-
-Credentials expose category, reviewer, verification time and expiry, rather than a single unexplained badge. Unreviewed jurisdictions fail closed. Residential street addresses and document storage keys are not rendered publicly.
-
-### Background processing
-
-```bash
-python manage.py escalate_care
-```
-
-Run every minute via a scheduler. It creates one incident and critical notification records for each previously un-escalated overdue critical task. Notification records are **queued only**: external delivery, retries, fallback and acknowledgements still need implementation. Do not rely on this app as an emergency alert service.
-
-### Deployment preparation
-
-Dockerfile, Gunicorn and Railway configuration are included. No deployment has been performed. Set `DEBUG=false`, a strong `SECRET_KEY`, PostgreSQL `DATABASE_URL`, exact `ALLOWED_HOSTS` and HTTPS `CSRF_TRUSTED_ORIGINS`. Configure trusted reverse-proxy HTTPS handling for the chosen host; never trust arbitrary forwarded headers. Run `python manage.py check --deploy` and follow [Django's deployment checklist](https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/).
-
-Before public use, complete the launch gates in the status document: real authentication integrations, admin MFA, private media scanning/storage, reviewed local compliance, payment webhooks, emergency delivery, observability, backups, access review and end-to-end QA. The provided Docker configuration does not make these integrations complete.
+The included Dockerfile, Gunicorn and Railway settings are deployment starting points. A hosted demo still needs exact hosts, HTTPS and CSRF configuration, a strong secret, PostgreSQL, and `python manage.py check --deploy`. A real pilot additionally needs provider and health-document verification, private media handling, reliable emergency notification delivery, stronger authentication, reviewed local rules, backups, payments/refunds if money is involved, and hands-on browser and device testing. See the [launch gates](docs/IMPLEMENTATION_STATUS.md) for the full list.
